@@ -1,10 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ingreso</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    color: white;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: #1e1e1e;
+    padding: 30px 20px;
+    border-radius: 15px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 32px;
+    margin-bottom: 25px;
+  }
+
+  input {
+    width: 100%;
+    padding: 18px;
+    font-size: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: none;
+  }
+
+  button {
+    width: 100%;
+    height: 70px;
+    font-size: 24px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+  }
+</style>
+</head>
+
 <body>
-<h2>Ingreso</h2>
-<input id="u" placeholder="Usuario">
-<input id="p" type="password" placeholder="Clave">
-<button onclick="login()">Entrar</button>
+
+<div class="card">
+  <h1>🔐 Ingreso</h1>
+
+  <input id="u" placeholder="Usuario">
+  <input id="p" type="password" placeholder="Contraseña">
+
+  <button onclick="login()">ENTRAR</button>
+</div>
 
 <script>
 function login(){
@@ -14,9 +72,10 @@ function login(){
     body:JSON.stringify({ user:u.value, pass:p.value })
   }).then(r=>{
     if(r.ok) location.href="panel.html";
-    else alert("Error");
+    else alert("Credenciales incorrectas");
   });
 }
 </script>
+
 </body>
 </html>
