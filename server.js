@@ -33,7 +33,7 @@ app.post("/login", (req, res) => {
 app.post("/crear", async (req, res) => {
   const { telefono, rut } = req.body;
 
-  // 🔹 AL MENOS UNO DEBE EXISTIR
+  // 🔹 AL MENOS UNO
   if (!telefono && !rut) {
     return res.status(400).json({
       error: "Debe ingresar RUT o teléfono"
@@ -110,7 +110,7 @@ app.delete("/eliminar/:id", (req, res) => {
   res.json({ ok: true, eliminado });
 });
 
-/* ========= STATS (NO SE BORRA) ========= */
+/* ========= STATS (NO SE TOCAN) ========= */
 app.get("/stats", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
   const hoy = new Date().toISOString().slice(0, 10);
@@ -127,3 +127,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("✔ Servidor activo en puerto", PORT);
 });
+
