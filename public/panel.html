@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Panel Crear Cupón</title>
+<title>Panel Cupones</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{
@@ -23,6 +23,7 @@ body{
   border-radius:18px;
   text-align:center;
 }
+h2{ margin-bottom:15px; }
 input{
   width:100%;
   padding:16px;
@@ -43,7 +44,13 @@ button{
 }
 .crear{ background:#2196f3; color:white; }
 .buscar{ background:#4caf50; color:black; }
-.eliminar{ background:#e53935; color:white; height:45px; font-size:16px; }
+.eliminar{
+  background:#e53935;
+  color:white;
+  height:45px;
+  font-size:16px;
+  margin-top:10px;
+}
 img{ margin-top:15px; width:240px; }
 .cupon{
   background:#111;
@@ -51,26 +58,36 @@ img{ margin-top:15px; width:240px; }
   border-radius:12px;
   margin-top:15px;
 }
+.stats{
+  margin-top:25px;
+  background:#000;
+  padding:15px;
+  border-radius:12px;
+  text-align:left;
+  font-size:18px;
+}
+.ok{ color:#4caf50; font-weight:bold; }
 </style>
 </head>
-
 <body>
+
 <div class="card">
   <h2>🎟 Panel Cupones</h2>
 
   <!-- CREAR -->
-  <input id="tel" placeholder="WhatsApp">
-  <input id="rut" placeholder="RUT cliente">
+  <input id="tel" placeholder="WhatsApp (opcional)">
+  <input id="rut" placeholder="RUT cliente (opcional)">
   <button class="crear" onclick="crear()">GENERAR CUPÓN</button>
-
   <div id="out"></div>
+
+  <!-- STATS -->
+  <div class="stats" id="stats">Cargando estadísticas...</div>
 
   <hr style="margin:25px 0;opacity:.3">
 
   <!-- BUSCAR -->
   <input id="buscarRut" placeholder="Buscar por RUT">
   <button class="buscar" onclick="buscar()">BUSCAR CUPONES</button>
-
   <div id="lista"></div>
 </div>
 
@@ -84,21 +101,39 @@ async function crear(){
       rut: rut.value
     })
   });
+
   const c = await res.json();
+
   if(!res.ok){
     out.innerHTML = `<p style="color:red">${c.error}</p>`;
     return;
   }
+
   out.innerHTML = `
     <p>QR generado</p>
     <img src="${c.qr}">
   `;
-  tel.value=""; rut.value="";
+
+  tel.value="";
+  rut.value="";
+  cargarStats();
+}
+
+async function cargarStats(){
+  const r = await fetch("/stats");
+  const s = await r.json();
+  stats.innerHTML = `
+    <p><b>📊 Resumen de hoy</b></p>
+    <p>🎟 Creados hoy: <span class="ok">${s.hoy}</span></p>
+    <p>✅ Canjeados hoy: <span class="ok">${s.usadosHoy}</span></p>
+    <p>📦 Total histórico: <b>${s.total}</b></p>
+  `;
 }
 
 async function buscar(){
   const r = buscarRut.value.trim();
   if(!r) return;
+
   const res = await fetch("/buscar/" + r);
   const listaCupones = await res.json();
   lista.innerHTML = "";
@@ -129,11 +164,15 @@ async function eliminar(id){
   if(res.ok){
     alert("Cupón eliminado");
     buscar();
+    cargarStats();
   }else{
     alert("Error al eliminar");
   }
 }
+
+cargarStats();
 </script>
+
 </body>
 </html>
 
