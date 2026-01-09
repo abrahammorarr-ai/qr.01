@@ -1,23 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Canjear cupón</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 30px;
+    background: #f4f4f4;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  button {
+    width: 100%;
+    max-width: 320px;
+    padding: 20px;
+    font-size: 22px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  button:active {
+    background: #218838;
+  }
+
+  .msg {
+    font-size: 20px;
+    margin-top: 25px;
+  }
+</style>
+</head>
+
 <body>
-<img src="/logo.png" width="120">
-<h2>Cupón</h2>
-<p id="estado">VÁLIDO</p>
-<button onclick="canjear()">CANJEAR</button>
+
+<h1>Canjear cupón</h1>
+
+<button onclick="canjear()">CANJEAR CUPÓN</button>
+
+<div class="msg" id="msg"></div>
 
 <script>
-const id = location.pathname.split("/").pop();
-function canjear(){
-  fetch("/canjear/"+id,{method:"POST"})
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.ok){
-      estado.innerText="CANJEADO";
-      estado.style.color="red";
-    } else alert(d.error);
-  });
+async function canjear() {
+  const id = location.pathname.split("/").pop();
+
+  const res = await fetch("/canjear/" + id, { method: "POST" });
+  const data = await res.json();
+
+  if (res.ok) {
+    document.getElementById("msg").innerHTML = "✅ Cupón canjeado";
+  } else {
+    document.getElementById("msg").innerHTML = "❌ " + data.error;
+  }
 }
 </script>
+
 </body>
 </html>
