@@ -67,10 +67,17 @@ img{ margin-top:15px; width:240px; }
   font-size:18px;
 }
 .ok{ color:#4caf50; font-weight:bold; }
+a{
+  display:block;
+  margin-top:12px;
+  font-size:18px;
+  color:#4caf50;
+  font-weight:bold;
+  text-decoration:none;
+}
 </style>
 </head>
 <body>
-
 <div class="card">
   <h2>🎟 Panel Cupones</h2>
 
@@ -86,7 +93,7 @@ img{ margin-top:15px; width:240px; }
   <hr style="margin:25px 0;opacity:.3">
 
   <!-- BUSCAR -->
-  <input id="buscarRut" placeholder="Buscar por RUT">
+  <input id="buscarValor" placeholder="Buscar por RUT o teléfono">
   <button class="buscar" onclick="buscar()">BUSCAR CUPONES</button>
   <div id="lista"></div>
 </div>
@@ -97,8 +104,8 @@ async function crear(){
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({
-      telefono: tel.value,
-      rut: rut.value
+      telefono: tel.value.trim(),
+      rut: rut.value.trim()
     })
   });
 
@@ -109,11 +116,21 @@ async function crear(){
     return;
   }
 
-  out.innerHTML = `
-    <p>QR generado</p>
+  let html = `
+    <p>✅ QR generado</p>
     <img src="${c.qr}">
   `;
 
+  if(c.telefono){
+    html += `
+      <a target="_blank"
+        href="https://wa.me/56${c.telefono}?text=Tu%20cupón:%20${location.origin}/cupon/${c.id}">
+        📲 Enviar por WhatsApp
+      </a>
+    `;
+  }
+
+  out.innerHTML = html;
   tel.value="";
   rut.value="";
   cargarStats();
@@ -131,11 +148,12 @@ async function cargarStats(){
 }
 
 async function buscar(){
-  const r = buscarRut.value.trim();
-  if(!r) return;
+  const v = buscarValor.value.trim();
+  if(!v) return;
 
-  const res = await fetch("/buscar/" + r);
+  const res = await fetch("/buscar/" + v);
   const listaCupones = await res.json();
+
   lista.innerHTML = "";
 
   if(listaCupones.length === 0){
@@ -161,6 +179,7 @@ async function eliminar(id){
   if(!seguro) return;
 
   const res = await fetch("/eliminar/" + id, { method:"DELETE" });
+
   if(res.ok){
     alert("Cupón eliminado");
     buscar();
@@ -172,8 +191,6 @@ async function eliminar(id){
 
 cargarStats();
 </script>
-
 </body>
 </html>
-
 
