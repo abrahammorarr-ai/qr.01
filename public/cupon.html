@@ -2,66 +2,118 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Canjear cupón</title>
+<title>Canjear Cupón</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
   body {
+    margin: 0;
     font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: #1e1e1e;
+    padding: 30px 20px;
     text-align: center;
-    padding: 30px;
-    background: #f4f4f4;
+    border-radius: 15px;
   }
 
   h1 {
-    font-size: 28px;
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+
+  .warning {
+    background: #ff9800;
+    color: #000;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 18px;
+    margin: 20px 0;
+    font-weight: bold;
   }
 
   button {
     width: 100%;
-    max-width: 320px;
-    padding: 20px;
-    font-size: 22px;
-    background: #28a745;
+    height: 90px;
+    font-size: 26px;
+    font-weight: bold;
+    background: #e53935;
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 15px;
     cursor: pointer;
-    margin-top: 20px;
   }
 
   button:active {
-    background: #218838;
+    background: #c62828;
   }
 
   .msg {
-    font-size: 20px;
     margin-top: 25px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .ok {
+    color: #4caf50;
+  }
+
+  .error {
+    color: #ff5252;
   }
 </style>
 </head>
 
 <body>
 
-<h1>Canjear cupón</h1>
+<div class="card">
+  <h1>🎟 Cupón</h1>
 
-<button onclick="canjear()">CANJEAR CUPÓN</button>
+  <div class="warning">
+    ⚠️ ADVERTENCIA<br>
+    Canjear SOLO en caja.<br>
+    Esta acción no se puede deshacer.
+  </div>
 
-<div class="msg" id="msg"></div>
+  <button onclick="confirmar()">CANJEAR CUPÓN</button>
+
+  <div class="msg" id="msg"></div>
+</div>
 
 <script>
-async function canjear() {
+async function confirmar() {
+  const seguro = confirm(
+    "⚠️ CONFIRMACIÓN\n\n¿Seguro que deseas CANJEAR este cupón?\n\nEsta acción no se puede revertir."
+  );
+
+  if (!seguro) return;
+
   const id = location.pathname.split("/").pop();
 
   const res = await fetch("/canjear/" + id, { method: "POST" });
   const data = await res.json();
 
+  const msg = document.getElementById("msg");
+
   if (res.ok) {
-    document.getElementById("msg").innerHTML = "✅ Cupón canjeado";
+    msg.innerHTML = "✅ CUPÓN CANJEADO";
+    msg.className = "msg ok";
   } else {
-    document.getElementById("msg").innerHTML = "❌ " + data.error;
+    msg.innerHTML = "❌ " + data.error;
+    msg.className = "msg error";
   }
 }
 </script>
 
 </body>
 </html>
+
