@@ -101,5 +101,19 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("✔ Servidor activo en puerto", PORT);
 });
+/* ========= ELIMINAR CUPÓN ========= */
+app.delete("/eliminar/:id", (req, res) => {
+  const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
+  const index = cupones.findIndex(c => c.id === req.params.id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: "Cupón no existe" });
+  }
+
+  const eliminado = cupones.splice(index, 1)[0];
+  fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
+
+  res.json({ ok: true, eliminado });
+});
 
 
