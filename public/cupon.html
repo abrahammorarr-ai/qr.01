@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+<img src="/logo.png" width="120">
+<h2>Cupón</h2>
+<p id="estado">VÁLIDO</p>
+<button onclick="canjear()">CANJEAR</button>
+
+<script>
+const id = location.pathname.split("/").pop();
+function canjear(){
+  fetch("/canjear/"+id,{method:"POST"})
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.ok){
+      estado.innerText="CANJEADO";
+      estado.style.color="red";
+    } else alert(d.error);
+  });
+}
+</script>
+</body>
+</html>

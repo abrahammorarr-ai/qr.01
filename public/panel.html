@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<body>
+<img src="logo.png" width="120"><br>
+<h2>Panel Cupones</h2>
+
+<div id="stats"></div>
+<input id="tel" placeholder="Teléfono">
+<button onclick="crear()">Generar QR</button>
+<div id="out"></div>
+<br>
+<a href="/exportar">Exportar reporte</a>
+
+<script>
+function load(){
+  fetch("/stats").then(r=>r.json()).then(d=>{
+    stats.innerHTML = `
+      Total: ${d.total}<br>
+      Usados: ${d.usados}<br>
+      Hoy: ${d.hoy}<br>
+      Usados hoy: ${d.usadosHoy}
+    `;
+  });
+}
+
+function crear(){
+  fetch("/crear",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ telefono: tel.value })
+  }).then(r=>r.json()).then(c=>{
+    out.innerHTML = `
+      <img src="${c.qr}" width="200"><br>
+      <a href="/cupon/${c.id}" target="_blank">Ver cupón</a>
+    `;
+    tel.value="";
+    load();
+  });
+}
+load();
+</script>
+</body>
+</html>

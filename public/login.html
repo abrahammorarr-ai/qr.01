@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Ingreso</h2>
+<input id="u" placeholder="Usuario">
+<input id="p" type="password" placeholder="Clave">
+<button onclick="login()">Entrar</button>
+
+<script>
+function login(){
+  fetch("/login",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ user:u.value, pass:p.value })
+  }).then(r=>{
+    if(r.ok) location.href="panel.html";
+    else alert("Error");
+  });
+}
+</script>
+</body>
+</html>
