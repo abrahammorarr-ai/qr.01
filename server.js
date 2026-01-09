@@ -42,14 +42,10 @@ app.post("/login", (req, res) => {
 });
 
 /* =======================
-   CREAR CUPÓN (CON RUT)
+   CREAR CUPÓN (SIN VALIDAR)
 ======================= */
 app.post("/crear", async (req, res) => {
   const { telefono, rut } = req.body;
-
-  if (!telefono || !rut) {
-    return res.status(400).json({ error: "Teléfono y RUT requeridos" });
-  }
 
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
 
@@ -60,8 +56,8 @@ app.post("/crear", async (req, res) => {
 
   const cupon = {
     id,
-    telefono,
-    rut,           // ✅ RUT guardado
+    telefono: telefono || "",
+    rut: rut || "",
     fecha,
     usado: false,
     usadoEn: null,
@@ -98,8 +94,8 @@ app.post("/canjear/:id", (req, res) => {
 
   cupon.usado = true;
   cupon.usadoEn = new Date().toISOString();
-
   fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
+
   res.json({ ok: true });
 });
 
@@ -126,7 +122,7 @@ app.get("/exportar", (req, res) => {
 });
 
 /* =======================
-   PUERTO (RENDER)
+   PUERTO
 ======================= */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
