@@ -31,14 +31,13 @@ app.post("/login", (req, res) => {
 
 /* ========= CREAR CUPÓN ========= */
 app.post("/crear", async (req, res) => {
-  const { telefono } = req.body;
+  const { telefono, rut } = req.body;
 
-  if (!telefono) {
-    return res.status(400).json({ error: "Teléfono requerido" });
+  if (!telefono && !rut) {
+    return res.status(400).json({ error: "Teléfono o RUT requerido" });
   }
 
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
-
   const id = uuidv4();
   const fecha = new Date().toISOString().slice(0, 10);
   const url = `${req.protocol}://${req.get("host")}/cupon/${id}`;
@@ -46,7 +45,8 @@ app.post("/crear", async (req, res) => {
 
   const cupon = {
     id,
-    telefono,
+    telefono: telefono || null,
+    rut: rut || null,
     fecha,
     usado: false,
     usadoEn: null,
@@ -64,13 +64,13 @@ app.get("/cupon/:id", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "cupon.html"));
 });
 
-/* ========= CANJEAR ========= */
+/* ========= CANJEAR CUPÓN ========= */
 app.post("/canjear/:id", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
   const cupon = cupones.find(c => c.id === req.params.id);
 
-  if (!cupon) return res.status(404).json({ error: "No existe" });
-  if (cupon.usado) return res.status(400).json({ error: "Ya usado" });
+  if (!cupon) return res.status(404).json({ error: "Cupón no existe" });
+  if (cupon.usado) return res.status(400).json({ error: "Cupón ya usado" });
 
   const hoy = new Date().toISOString().slice(0, 10);
   if (cupon.fecha !== hoy) {
@@ -82,6 +82,33 @@ app.post("/canjear/:id", (req, res) => {
   fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
 
   res.json({ ok: true });
+});
+
+/* ========= BUSCAR POR RUT ========= */
+app.get("/buscar/rut/:rut", (req, res) => {
+  const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
+  const encontrados = cupones.filter(c => c.rut === req.params.rut);
+
+  if (encontrados.length === 0) {
+    return res.status(404).json({ error: "No hay cupones con ese RUT" });
+  }
+
+  res.json(encontrados);
+});
+
+/* ========= ELIMINAR CUPÓN ========= */
+app.delete("/eliminar/:id", (req, res) => {
+  const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
+  const index = cupones.findIndex(c => c.id === req.params.id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: "Cupón no existe" });
+  }
+
+  const eliminado = cupones.splice(index, 1)[0];
+  fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
+
+  res.json({ ok: true, eliminado });
 });
 
 /* ========= STATS ========= */
@@ -101,19 +128,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("✔ Servidor activo en puerto", PORT);
 });
-/* ========= ELIMINAR CUPÓN ========= */
-app.delete("/eliminar/:id", (req, res) => {
-  const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
-  const index = cupones.findIndex(c => c.id === req.params.id);
-
-  if (index === -1) {
-    return res.status(404).json({ error: "Cupón no existe" });
-  }
-
-  const eliminado = cupones.splice(index, 1)[0];
-  fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
-
-  res.json({ ok: true, eliminado });
-});
-
 
