@@ -1,37 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Panel Cupones</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
 <img src="logo.png" width="120">
 <h2>Panel Cupones</h2>
 
-<div id="stats"></div>
+<div id="stats">Cargando estadísticas...</div>
 
 <input id="tel" placeholder="Teléfono cliente">
 <button onclick="crear()">Generar QR</button>
 
 <div id="qr"></div>
-<br>
+
+<br><br>
 <a href="/exportar">Exportar reporte</a>
 
 <script>
-function stats(){
-  fetch("/stats").then(r=>r.json()).then(d=>{
-    stats.innerHTML=`Hoy ${d.fecha}<br>Creados: ${d.creados}<br>Usados: ${d.usados}`;
-  });
+function cargarStats(){
+  fetch("/stats")
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById("stats").innerHTML = `
+        <b>📊 Estadísticas</b><br>
+        🎟 Creados hoy: ${d.hoy}<br>
+        ✅ Canjeados hoy: ${d.usadosHoy}<br>
+        📦 Total histórico: ${d.total}
+      `;
+    });
 }
+
 function crear(){
-  fetch("/crear",{method:"POST",headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({telefono:tel.value})})
-  .then(r=>r.json()).then(c=>{
-    qr.innerHTML=`<img src="${c.qr}" width="200">`;
-    tel.value="";
-    stats();
+  fetch("/crear",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ telefono: tel.value })
+  })
+  .then(r => r.json())
+  .then(c => {
+    if(!c.qr){
+      qr.innerHTML = "<p style='color:red'>❌ No se generó el QR</p>";
+      return;
+    }
+    qr.innerHTML = `<img src="${c.qr}" width="220">`;
+    tel.value = "";
+    cargarStats();
   });
 }
-stats();
+
+cargarStats();
 </script>
+
 </body>
 </html>
+
+
