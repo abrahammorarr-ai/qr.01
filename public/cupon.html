@@ -6,77 +6,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #111;
-    color: #fff;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .card {
-    width: 100%;
-    max-width: 420px;
-    background: #1e1e1e;
-    padding: 30px 20px;
-    text-align: center;
-    border-radius: 15px;
-  }
-
-  h1 {
-    font-size: 32px;
-    margin-bottom: 10px;
-  }
-
-  .warning {
-    background: #ff9800;
-    color: #000;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 18px;
-    margin: 20px 0;
-    font-weight: bold;
-  }
-
-  button {
-    width: 100%;
-    height: 90px;
-    font-size: 26px;
-    font-weight: bold;
-    background: #e53935;
-    color: white;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-  }
-
-  button:active {
-    background: #c62828;
-  }
-
-  .msg {
-    margin-top: 25px;
-    font-size: 24px;
-    font-weight: bold;
-  }
-
-  .ok {
-    color: #4caf50;
-  }
-
-  .error {
-    color: #ff5252;
-  }
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#111;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.card{
+  width:100%;
+  max-width:420px;
+  background:#1e1e1e;
+  padding:30px 20px;
+  text-align:center;
+  border-radius:18px;
+}
+h1{
+  font-size:34px;
+  margin-bottom:10px;
+}
+.warning{
+  background:#ff9800;
+  color:#000;
+  padding:16px;
+  border-radius:12px;
+  font-size:18px;
+  margin:20px 0;
+  font-weight:bold;
+}
+input{
+  width:100%;
+  padding:18px;
+  font-size:22px;
+  border-radius:12px;
+  border:none;
+  margin-bottom:20px;
+  text-align:center;
+}
+button{
+  width:100%;
+  height:90px;
+  font-size:28px;
+  font-weight:bold;
+  background:#e53935;
+  color:white;
+  border:none;
+  border-radius:18px;
+}
+button:active{
+  background:#c62828;
+}
+.msg{
+  margin-top:25px;
+  font-size:26px;
+  font-weight:bold;
+}
+.ok{ color:#4caf50; }
+.error{ color:#ff5252; }
 </style>
 </head>
 
 <body>
-
 <div class="card">
-  <h1>🎟 Cupón</h1>
+  <h1>🎟 CUPÓN</h1>
 
   <div class="warning">
     ⚠️ ADVERTENCIA<br>
@@ -84,36 +79,50 @@
     Esta acción no se puede deshacer.
   </div>
 
+  <input id="rut" placeholder="RUT del cliente">
+
   <button onclick="confirmar()">CANJEAR CUPÓN</button>
 
-  <div class="msg" id="msg"></div>
+  <div id="msg" class="msg"></div>
 </div>
 
 <script>
-async function confirmar() {
-  const seguro = confirm(
-    "⚠️ CONFIRMACIÓN\n\n¿Seguro que deseas CANJEAR este cupón?\n\nEsta acción no se puede revertir."
-  );
+async function confirmar(){
+  const rut = document.getElementById("rut").value.trim();
+  const msg = document.getElementById("msg");
 
-  if (!seguro) return;
+  if(!rut){
+    msg.textContent = "❌ Debe ingresar el RUT";
+    msg.className = "msg error";
+    return;
+  }
+
+  const seguro = confirm(
+    "⚠️ CONFIRMACIÓN\n\n¿Seguro que deseas CANJEAR este cupón?\n\nRUT: " + rut
+  );
+  if(!seguro) return;
 
   const id = location.pathname.split("/").pop();
 
-  const res = await fetch("/canjear/" + id, { method: "POST" });
+  const res = await fetch("/canjear/" + id,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ rut })
+  });
+
   const data = await res.json();
 
-  const msg = document.getElementById("msg");
-
-  if (res.ok) {
-    msg.innerHTML = "✅ CUPÓN CANJEADO";
+  if(res.ok){
+    msg.textContent = "✅ CUPÓN CANJEADO";
     msg.className = "msg ok";
-  } else {
-    msg.innerHTML = "❌ " + data.error;
+  }else{
+    msg.textContent = "❌ " + data.error;
     msg.className = "msg error";
   }
 }
 </script>
-
 </body>
 </html>
+
+
 
