@@ -30,7 +30,7 @@ input{
   font-size:22px;
   border-radius:12px;
   border:none;
-  margin-bottom:20px;
+  margin-bottom:15px;
   text-align:center;
 }
 button{
@@ -61,13 +61,17 @@ a{
   text-align:left;
 }
 .ok{ color:#4caf50; font-weight:bold; }
+.error{ color:#ff5252; font-weight:bold; }
 </style>
 </head>
 <body>
+
 <div class="card">
   <h1>🎟 Crear cupón</h1>
 
-  <input id="tel" placeholder="WhatsApp (ej: 912345678)">
+  <input id="rut" placeholder="RUT cliente (sin validar)">
+  <input id="tel" placeholder="WhatsApp (opcional)">
+
   <button onclick="crear()">GENERAR CUPÓN</button>
 
   <div id="out"></div>
@@ -80,25 +84,30 @@ async function crear(){
   const res = await fetch("/crear",{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ telefono: tel.value })
+    body: JSON.stringify({
+      rut: rut.value || "-",
+      telefono: tel.value || "-"
+    })
   });
 
   const c = await res.json();
 
   if(!res.ok){
-    out.innerHTML = `<p style="color:red;font-size:20px">❌ ${c.error}</p>`;
+    out.innerHTML = `<p class="error">❌ ${c.error}</p>`;
     return;
   }
 
   out.innerHTML = `
     <p style="font-size:22px;">QR generado</p>
     <img src="${c.qr}">
+    ${c.telefono !== "-" ? `
     <a target="_blank"
       href="https://wa.me/56${c.telefono}?text=Tu%20cupón:%20${location.origin}/cupon/${c.id}">
       📲 Enviar por WhatsApp
-    </a>
+    </a>` : ""}
   `;
 
+  rut.value = "";
   tel.value = "";
   cargarStats();
 }
@@ -115,6 +124,9 @@ async function cargarStats(){
 }
 cargarStats();
 </script>
+
 </body>
 </html>
+
+
 
