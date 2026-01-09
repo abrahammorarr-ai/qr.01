@@ -38,6 +38,7 @@
     border-radius: 10px;
     border: none;
     margin-bottom: 20px;
+    text-align: center;
   }
 
   button {
@@ -55,6 +56,24 @@
     margin-top: 25px;
     width: 260px;
   }
+
+  .stats {
+    margin-top: 30px;
+    padding: 20px;
+    background: #111;
+    border-radius: 12px;
+    font-size: 20px;
+    text-align: left;
+  }
+
+  .stats p {
+    margin: 10px 0;
+  }
+
+  .ok {
+    color: #4caf50;
+    font-weight: bold;
+  }
 </style>
 </head>
 
@@ -63,11 +82,16 @@
 <div class="card">
   <h1>🎟 Crear cupón</h1>
 
-  <input id="tel" placeholder="Número WhatsApp (ej: 912345678)">
+  <input id="tel" placeholder="WhatsApp (ej: 912345678)">
 
   <button onclick="crear()">GENERAR CUPÓN</button>
 
   <div id="out"></div>
+
+  <!-- STATS -->
+  <div class="stats" id="stats">
+    Cargando estadísticas...
+  </div>
 </div>
 
 <script>
@@ -85,14 +109,31 @@ async function crear(){
     <img src="${c.qr}">
     <br><br>
     <a 
-      style="font-size:20px;color:#4caf50"
+      style="font-size:22px;color:#4caf50;font-weight:bold"
       target="_blank"
       href="https://wa.me/56${c.telefono}?text=Tu%20cupón:%20${location.origin}/cupon/${c.id}">
-      Enviar por WhatsApp
+      📲 Enviar por WhatsApp
     </a>
   `;
+
+  cargarStats(); // refresca stats al crear
 }
+
+async function cargarStats(){
+  const r = await fetch("/stats");
+  const s = await r.json();
+
+  document.getElementById("stats").innerHTML = `
+    <p>📊 <b>Resumen de hoy</b></p>
+    <p>🎟 Creados hoy: <span class="ok">${s.hoy}</span></p>
+    <p>✅ Canjeados hoy: <span class="ok">${s.usadosHoy}</span></p>
+    <p>📦 Total histórico: <b>${s.total}</b></p>
+  `;
+}
+
+cargarStats();
 </script>
 
 </body>
 </html>
+
