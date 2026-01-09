@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Panel Crear Cupón</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 body{
   margin:0;
@@ -16,7 +15,6 @@ body{
   font-family:Arial, sans-serif;
   color:white;
 }
-
 .card{
   width:100%;
   max-width:420px;
@@ -25,12 +23,7 @@ body{
   border-radius:18px;
   text-align:center;
 }
-
-h1{
-  font-size:32px;
-  margin-bottom:20px;
-}
-
+h1{ font-size:32px; margin-bottom:20px; }
 input{
   width:100%;
   padding:18px;
@@ -40,7 +33,6 @@ input{
   margin-bottom:20px;
   text-align:center;
 }
-
 button{
   width:100%;
   height:85px;
@@ -51,12 +43,7 @@ button{
   border:none;
   border-radius:16px;
 }
-
-img{
-  margin-top:20px;
-  width:260px;
-}
-
+img{ margin-top:20px; width:260px; }
 a{
   display:block;
   margin-top:20px;
@@ -65,7 +52,6 @@ a{
   font-weight:bold;
   text-decoration:none;
 }
-
 .stats{
   margin-top:30px;
   padding:18px;
@@ -74,31 +60,19 @@ a{
   font-size:20px;
   text-align:left;
 }
-
-.stats p{
-  margin:8px 0;
-}
-
-.ok{
-  color:#4caf50;
-  font-weight:bold;
-}
+.ok{ color:#4caf50; font-weight:bold; }
 </style>
 </head>
-
 <body>
 <div class="card">
   <h1>🎟 Crear cupón</h1>
 
   <input id="tel" placeholder="WhatsApp (ej: 912345678)">
-
   <button onclick="crear()">GENERAR CUPÓN</button>
 
   <div id="out"></div>
 
-  <div class="stats" id="stats">
-    Cargando estadísticas...
-  </div>
+  <div class="stats" id="stats">Cargando estadísticas...</div>
 </div>
 
 <script>
@@ -109,25 +83,19 @@ async function crear(){
     body: JSON.stringify({ telefono: tel.value })
   });
 
-  if(!res.ok){
-    out.innerHTML = "<p style='color:red;font-size:20px'>❌ Error al crear cupón</p>";
-    return;
-  }
-
   const c = await res.json();
 
-  if(!c.qr){
-    out.innerHTML = "<p style='color:red;font-size:20px'>❌ No se recibió el QR</p>";
-    console.log(c);
+  if(!res.ok){
+    out.innerHTML = `<p style="color:red;font-size:20px">❌ ${c.error}</p>`;
     return;
   }
 
   out.innerHTML = `
-    <p style="font-size:22px;margin-top:20px;">QR generado</p>
+    <p style="font-size:22px;">QR generado</p>
     <img src="${c.qr}">
     <a target="_blank"
-       href="https://wa.me/56${c.telefono}?text=Tu%20cupón:%20${location.origin}/cupon/${c.id}">
-       📲 Enviar por WhatsApp
+      href="https://wa.me/56${c.telefono}?text=Tu%20cupón:%20${location.origin}/cupon/${c.id}">
+      📲 Enviar por WhatsApp
     </a>
   `;
 
@@ -138,15 +106,15 @@ async function crear(){
 async function cargarStats(){
   const r = await fetch("/stats");
   const s = await r.json();
-  document.getElementById("stats").innerHTML = `
-    <p><b>📊 Resumen de hoy</b></p>
-    <p>🎟 Creados hoy: <span class="ok">${s.hoy}</span></p>
-    <p>✅ Canjeados hoy: <span class="ok">${s.usadosHoy}</span></p>
-    <p>📦 Total histórico: <b>${s.total}</b></p>
+  stats.innerHTML = `
+    <p><b>📊 Hoy</b></p>
+    <p>🎟 Creados: <span class="ok">${s.hoy}</span></p>
+    <p>✅ Canjeados: <span class="ok">${s.usadosHoy}</span></p>
+    <p>📦 Total: <b>${s.total}</b></p>
   `;
 }
-
 cargarStats();
 </script>
 </body>
 </html>
+
