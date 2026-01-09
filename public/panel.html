@@ -17,66 +17,61 @@ body{
 }
 .card{
   width:100%;
-  max-width:420px;
+  max-width:440px;
   background:#1e1e1e;
   padding:30px 20px;
   border-radius:18px;
   text-align:center;
 }
-h1{ font-size:32px; margin-bottom:20px; }
 input{
   width:100%;
-  padding:18px;
-  font-size:22px;
-  border-radius:12px;
+  padding:16px;
+  font-size:20px;
+  border-radius:10px;
   border:none;
-  margin-bottom:15px;
+  margin-bottom:12px;
   text-align:center;
 }
 button{
   width:100%;
-  height:85px;
-  font-size:26px;
-  font-weight:bold;
-  background:#2196f3;
-  color:white;
-  border:none;
-  border-radius:16px;
-}
-img{ margin-top:20px; width:260px; }
-a{
-  display:block;
-  margin-top:20px;
+  height:65px;
   font-size:22px;
-  color:#4caf50;
   font-weight:bold;
-  text-decoration:none;
+  border:none;
+  border-radius:14px;
+  margin-top:10px;
 }
-.stats{
-  margin-top:30px;
-  padding:18px;
+.crear{ background:#2196f3; color:white; }
+.buscar{ background:#4caf50; color:black; }
+.eliminar{ background:#e53935; color:white; height:45px; font-size:16px; }
+img{ margin-top:15px; width:240px; }
+.cupon{
   background:#111;
+  padding:15px;
   border-radius:12px;
-  font-size:20px;
-  text-align:left;
+  margin-top:15px;
 }
-.ok{ color:#4caf50; font-weight:bold; }
-.error{ color:#ff5252; font-weight:bold; }
 </style>
 </head>
+
 <body>
-
 <div class="card">
-  <h1>🎟 Crear cupón</h1>
+  <h2>🎟 Panel Cupones</h2>
 
-  <input id="rut" placeholder="RUT cliente (sin validar)">
-  <input id="tel" placeholder="WhatsApp (opcional)">
-
-  <button onclick="crear()">GENERAR CUPÓN</button>
+  <!-- CREAR -->
+  <input id="tel" placeholder="WhatsApp">
+  <input id="rut" placeholder="RUT cliente">
+  <button class="crear" onclick="crear()">GENERAR CUPÓN</button>
 
   <div id="out"></div>
 
-  <div class="stats" id="stats">Cargando estadísticas...</div>
+  <hr style="margin:25px 0;opacity:.3">
+
+  <!-- BUSCAR -->
+  <input id="buscarRut" placeholder="Buscar por RUT">
+  <button class="buscar" onclick="buscar()">BUSCAR CUPONES</button>
+
+  <div id="lista"></div>
 </div>
 
 <script>
@@ -85,48 +80,61 @@ async function crear(){
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({
-      rut: rut.value || "-",
-      telefono: tel.value || "-"
+      telefono: tel.value,
+      rut: rut.value
     })
   });
-
   const c = await res.json();
-
   if(!res.ok){
-    out.innerHTML = `<p class="error">❌ ${c.error}</p>`;
+    out.innerHTML = `<p style="color:red">${c.error}</p>`;
+    return;
+  }
+  out.innerHTML = `
+    <p>QR generado</p>
+    <img src="${c.qr}">
+  `;
+  tel.value=""; rut.value="";
+}
+
+async function buscar(){
+  const r = buscarRut.value.trim();
+  if(!r) return;
+  const res = await fetch("/buscar/" + r);
+  const listaCupones = await res.json();
+  lista.innerHTML = "";
+
+  if(listaCupones.length === 0){
+    lista.innerHTML = "<p>No hay cupones</p>";
     return;
   }
 
-  out.innerHTML = `
-    <p style="font-size:22px;">QR generado</p>
-    <img src="${c.qr}">
-    ${c.telefono !== "-" ? `
-    <a target="_blank"
-      href="https://wa.me/56${c.telefono}?text=Tu%20cupón:%20${location.origin}/cupon/${c.id}">
-      📲 Enviar por WhatsApp
-    </a>` : ""}
-  `;
-
-  rut.value = "";
-  tel.value = "";
-  cargarStats();
+  listaCupones.forEach(c=>{
+    lista.innerHTML += `
+      <div class="cupon">
+        <p>📅 ${c.fecha}</p>
+        <p>${c.usado ? "❌ Usado" : "✅ Activo"}</p>
+        <button class="eliminar" onclick="eliminar('${c.id}')">
+          🗑 ELIMINAR
+        </button>
+      </div>
+    `;
+  });
 }
 
-async function cargarStats(){
-  const r = await fetch("/stats");
-  const s = await r.json();
-  stats.innerHTML = `
-    <p><b>📊 Hoy</b></p>
-    <p>🎟 Creados: <span class="ok">${s.hoy}</span></p>
-    <p>✅ Canjeados: <span class="ok">${s.usadosHoy}</span></p>
-    <p>📦 Total: <b>${s.total}</b></p>
-  `;
+async function eliminar(id){
+  const seguro = confirm("⚠️ ¿Eliminar este cupón?\n\nEsta acción NO se puede deshacer");
+  if(!seguro) return;
+
+  const res = await fetch("/eliminar/" + id, { method:"DELETE" });
+  if(res.ok){
+    alert("Cupón eliminado");
+    buscar();
+  }else{
+    alert("Error al eliminar");
+  }
 }
-cargarStats();
 </script>
-
 </body>
 </html>
-
 
 
