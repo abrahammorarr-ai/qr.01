@@ -89,9 +89,15 @@ app.post("/canjear/:id", (req, res) => {
 });
 
 /* ========= BUSCAR POR RUT ========= */
-app.get("/buscar/:rut", (req, res) => {
+app.get("/buscar/:valor", (req, res) => {
+  const v = req.params.valor;
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
-  const lista = cupones.filter(c => c.rut === req.params.rut);
+
+  const lista = cupones.filter(c =>
+    (c.rut && c.rut === v) ||
+    (c.telefono && c.telefono === v)
+  );
+
   res.json(lista);
 });
 
@@ -127,4 +133,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("✔ Servidor activo en puerto", PORT);
 });
+
 
