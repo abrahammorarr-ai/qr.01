@@ -33,8 +33,11 @@ app.post("/login", (req, res) => {
 app.post("/crear", async (req, res) => {
   const { telefono, rut } = req.body;
 
-  if (!telefono || !rut) {
-    return res.status(400).json({ error: "Teléfono y RUT requeridos" });
+  // 🔹 AL MENOS UNO DEBE EXISTIR
+  if (!telefono && !rut) {
+    return res.status(400).json({
+      error: "Debe ingresar RUT o teléfono"
+    });
   }
 
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
@@ -46,8 +49,8 @@ app.post("/crear", async (req, res) => {
 
   const cupon = {
     id,
-    telefono,
-    rut,          // ← se guarda TAL CUAL, sin validar
+    telefono: telefono || null,
+    rut: rut || null,
     fecha,
     usado: false,
     usadoEn: null,
@@ -65,7 +68,7 @@ app.get("/cupon/:id", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "cupon.html"));
 });
 
-/* ========= CANJEAR CUPÓN ========= */
+/* ========= CANJEAR ========= */
 app.post("/canjear/:id", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
   const cupon = cupones.find(c => c.id === req.params.id);
@@ -88,10 +91,8 @@ app.post("/canjear/:id", (req, res) => {
 /* ========= BUSCAR POR RUT ========= */
 app.get("/buscar/:rut", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
-  const rut = req.params.rut;
-
-  const encontrados = cupones.filter(c => c.rut === rut);
-  res.json(encontrados);
+  const lista = cupones.filter(c => c.rut === req.params.rut);
+  res.json(lista);
 });
 
 /* ========= ELIMINAR CUPÓN ========= */
@@ -103,13 +104,13 @@ app.delete("/eliminar/:id", (req, res) => {
     return res.status(404).json({ error: "Cupón no existe" });
   }
 
-  cupones.splice(index, 1);
+  const eliminado = cupones.splice(index, 1)[0];
   fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
 
-  res.json({ ok: true });
+  res.json({ ok: true, eliminado });
 });
 
-/* ========= STATS ========= */
+/* ========= STATS (NO SE BORRA) ========= */
 app.get("/stats", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
   const hoy = new Date().toISOString().slice(0, 10);
