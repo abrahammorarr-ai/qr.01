@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Canjear Cupón</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 body{
   margin:0;
@@ -37,15 +36,6 @@ h1{
   margin:20px 0;
   font-weight:bold;
 }
-input{
-  width:100%;
-  padding:18px;
-  font-size:22px;
-  border-radius:12px;
-  border:none;
-  margin-bottom:20px;
-  text-align:center;
-}
 button{
   width:100%;
   height:90px;
@@ -68,8 +58,8 @@ button:active{
 .error{ color:#ff5252; }
 </style>
 </head>
-
 <body>
+
 <div class="card">
   <h1>🎟 CUPÓN</h1>
 
@@ -79,37 +69,22 @@ button:active{
     Esta acción no se puede deshacer.
   </div>
 
-  <input id="rut" placeholder="RUT del cliente">
-
-  <button onclick="confirmar()">CANJEAR CUPÓN</button>
+  <button onclick="canjear()">CANJEAR CUPÓN</button>
 
   <div id="msg" class="msg"></div>
 </div>
 
 <script>
-async function confirmar(){
-  const rut = document.getElementById("rut").value.trim();
-  const msg = document.getElementById("msg");
-
-  if(!rut){
-    msg.textContent = "❌ Debe ingresar el RUT";
-    msg.className = "msg error";
-    return;
-  }
-
+async function canjear(){
   const seguro = confirm(
-    "⚠️ CONFIRMACIÓN\n\n¿Seguro que deseas CANJEAR este cupón?\n\nRUT: " + rut
+    "⚠️ CONFIRMACIÓN\n\n¿Seguro que deseas CANJEAR este cupón?\n\nEsta acción no se puede revertir."
   );
   if(!seguro) return;
 
   const id = location.pathname.split("/").pop();
+  const msg = document.getElementById("msg");
 
-  const res = await fetch("/canjear/" + id,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ rut })
-  });
-
+  const res = await fetch("/canjear/" + id, { method:"POST" });
   const data = await res.json();
 
   if(res.ok){
@@ -121,6 +96,7 @@ async function confirmar(){
   }
 }
 </script>
+
 </body>
 </html>
 
