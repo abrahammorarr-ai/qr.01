@@ -33,11 +33,12 @@ app.post("/login", (req, res) => {
 app.post("/crear", async (req, res) => {
   const { telefono, rut } = req.body;
 
-  if (!telefono && !rut) {
-    return res.status(400).json({ error: "Teléfono o RUT requerido" });
+  if (!telefono || !rut) {
+    return res.status(400).json({ error: "Teléfono y RUT requeridos" });
   }
 
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
+
   const id = uuidv4();
   const fecha = new Date().toISOString().slice(0, 10);
   const url = `${req.protocol}://${req.get("host")}/cupon/${id}`;
@@ -45,8 +46,8 @@ app.post("/crear", async (req, res) => {
 
   const cupon = {
     id,
-    telefono: telefono || null,
-    rut: rut || null,
+    telefono,
+    rut,          // ← se guarda TAL CUAL, sin validar
     fecha,
     usado: false,
     usadoEn: null,
@@ -69,8 +70,8 @@ app.post("/canjear/:id", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
   const cupon = cupones.find(c => c.id === req.params.id);
 
-  if (!cupon) return res.status(404).json({ error: "Cupón no existe" });
-  if (cupon.usado) return res.status(400).json({ error: "Cupón ya usado" });
+  if (!cupon) return res.status(404).json({ error: "No existe" });
+  if (cupon.usado) return res.status(400).json({ error: "Ya usado" });
 
   const hoy = new Date().toISOString().slice(0, 10);
   if (cupon.fecha !== hoy) {
@@ -79,20 +80,17 @@ app.post("/canjear/:id", (req, res) => {
 
   cupon.usado = true;
   cupon.usadoEn = new Date().toISOString();
-  fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
 
+  fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
   res.json({ ok: true });
 });
 
 /* ========= BUSCAR POR RUT ========= */
-app.get("/buscar/rut/:rut", (req, res) => {
+app.get("/buscar/:rut", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
-  const encontrados = cupones.filter(c => c.rut === req.params.rut);
+  const rut = req.params.rut;
 
-  if (encontrados.length === 0) {
-    return res.status(404).json({ error: "No hay cupones con ese RUT" });
-  }
-
+  const encontrados = cupones.filter(c => c.rut === rut);
   res.json(encontrados);
 });
 
@@ -105,10 +103,10 @@ app.delete("/eliminar/:id", (req, res) => {
     return res.status(404).json({ error: "Cupón no existe" });
   }
 
-  const eliminado = cupones.splice(index, 1)[0];
+  cupones.splice(index, 1);
   fs.writeFileSync(DB, JSON.stringify(cupones, null, 2));
 
-  res.json({ ok: true, eliminado });
+  res.json({ ok: true });
 });
 
 /* ========= STATS ========= */
@@ -128,4 +126,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("✔ Servidor activo en puerto", PORT);
 });
-
