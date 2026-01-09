@@ -33,7 +33,7 @@ app.post("/login", (req, res) => {
 app.post("/crear", async (req, res) => {
   const { telefono, rut } = req.body;
 
-  // 🔹 AL MENOS UNO
+  // 🔹 SOLO EXIGE QUE AL MENOS UNO EXISTA
   if (!telefono && !rut) {
     return res.status(400).json({
       error: "Debe ingresar RUT o teléfono"
@@ -68,7 +68,7 @@ app.get("/cupon/:id", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "cupon.html"));
 });
 
-/* ========= CANJEAR ========= */
+/* ========= CANJEAR CUPÓN ========= */
 app.post("/canjear/:id", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
   const cupon = cupones.find(c => c.id === req.params.id);
@@ -88,14 +88,14 @@ app.post("/canjear/:id", (req, res) => {
   res.json({ ok: true });
 });
 
-/* ========= BUSCAR POR RUT ========= */
+/* ========= BUSCAR POR RUT O TELÉFONO ========= */
+/* 👇 ESTO ES LO QUE ME PREGUNTASTE "DÓNDE CAMBIO" */
 app.get("/buscar/:valor", (req, res) => {
-  const v = req.params.valor;
+  const valor = req.params.valor;
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
 
   const lista = cupones.filter(c =>
-    (c.rut && c.rut === v) ||
-    (c.telefono && c.telefono === v)
+    c.rut === valor || c.telefono === valor
   );
 
   res.json(lista);
@@ -116,7 +116,7 @@ app.delete("/eliminar/:id", (req, res) => {
   res.json({ ok: true, eliminado });
 });
 
-/* ========= STATS (NO SE TOCAN) ========= */
+/* ========= STATS (NO SE BORRA) ========= */
 app.get("/stats", (req, res) => {
   const cupones = JSON.parse(fs.readFileSync(DB, "utf8"));
   const hoy = new Date().toISOString().slice(0, 10);
