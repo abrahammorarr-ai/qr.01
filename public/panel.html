@@ -1,58 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Panel de Cupones</title>
+<meta charset="UTF-8">
+<title>Crear Cupón</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    color: white;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: #1e1e1e;
+    padding: 30px 20px;
+    border-radius: 15px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 30px;
+    margin-bottom: 20px;
+  }
+
+  input {
+    width: 100%;
+    padding: 18px;
+    font-size: 22px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 20px;
+  }
+
+  button {
+    width: 100%;
+    height: 80px;
+    font-size: 26px;
+    background: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: bold;
+  }
+
+  img {
+    margin-top: 25px;
+    width: 260px;
+  }
+</style>
 </head>
+
 <body>
 
-<h2>Crear cupón</h2>
+<div class="card">
+  <h1>🎟 Crear cupón</h1>
 
-<input id="telefono" placeholder="Ej: 56912345678">
-<button onclick="crearCupon()">Crear cupón</button>
+  <input id="tel" placeholder="Número WhatsApp (ej: 912345678)">
 
-<hr>
+  <button onclick="crear()">GENERAR CUPÓN</button>
 
-<div id="resultado"></div>
+  <div id="out"></div>
+</div>
 
 <script>
-async function crearCupon() {
-  const telefono = document.getElementById("telefono").value;
-
-  if (!telefono) {
-    alert("Ingresa un número");
-    return;
-  }
-
-  const res = await fetch("/crear", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ telefono })
+async function crear(){
+  const res = await fetch("/crear",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ telefono: tel.value })
   });
 
-  const data = await res.json();
+  const c = await res.json();
 
-  if (data.error) {
-    alert(data.error);
-    return;
-  }
-
-  const linkCupon = `${location.origin}/cupon/${data.id}`;
-  const mensaje = encodeURIComponent(
-    `Hola 👋\nAquí tienes tu cupón válido por hoy:\n${linkCupon}`
-  );
-
-  const whatsappURL = `https://wa.me/${telefono}?text=${mensaje}`;
-
-  document.getElementById("resultado").innerHTML = `
-    <h3>Cupón generado</h3>
-    <img src="${data.qr}" width="200"><br><br>
-
-    <a href="${whatsappURL}" target="_blank">
-      📲 Enviar por WhatsApp
+  out.innerHTML = `
+    <p style="font-size:22px;margin-top:20px;">QR generado</p>
+    <img src="${c.qr}">
+    <br><br>
+    <a 
+      style="font-size:20px;color:#4caf50"
+      target="_blank"
+      href="https://wa.me/56${c.telefono}?text=Tu%20cupón:%20${location.origin}/cupon/${c.id}">
+      Enviar por WhatsApp
     </a>
-
-    <p><b>Teléfono:</b> ${telefono}</p>
   `;
 }
 </script>
